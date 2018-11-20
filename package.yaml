@@ -1,0 +1,23 @@
+name:                desukara-shard
+version:             0.1.0.0
+synopsis:            Desukara Discord bot; shard execution unit.
+# homepage:            https://github.com/githubuser/interface#readme
+license:             BSD3
+author:              Andy Chun @noneucat 
+maintainer:          andy@lolc.at 
+copyright:           2018 Sang Hak (Andy) Chun
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - text
+  - time
+  - discord-haskell
+  - db-library
+  - regex-compat
+
+executables:
+  interface:
+    source-dirs:      src
+    main:             Main.hs

@@ -1,0 +1,39 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 6684102e92cb44bb842d6de92c4ea345fc4ef69b22d3dc66224ac7433ede421f
+
+name:           desukara-shard
+version:        0.1.0.0
+synopsis:       Desukara Discord bot; shard execution unit.
+author:         Andy Chun @noneucat
+maintainer:     andy@lolc.at
+copyright:      2018 Sang Hak (Andy) Chun
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+executable interface
+  main-is: Main.hs
+  other-modules:
+      Desukara.ChannelMonitor
+      Desukara.Crawler
+      Desukara.CrawlerSupervisor
+      Desukara.JobFlusher
+      Desukara.MessageManager
+      Paths_desukara_shard
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , db-library
+    , discord-haskell
+    , regex-compat
+    , text
+    , time
+  default-language: Haskell2010
