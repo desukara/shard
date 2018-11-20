@@ -37,7 +37,7 @@ main = do
   -- are we a supervisor shard?
   enableSuper     <- lookup' "shard.supervisor.enable" False
   
-  botid           <- lookup' "shard.botId" ""   -- bot discord id
+  botid           <- lookup' "shard.botDiscordId" ""   -- bot discord id
 
 
   -- connect to gateway
