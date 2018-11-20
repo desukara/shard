@@ -9,9 +9,12 @@ import DbLib.CrawlerDb.Jobs
 import DbLib.GuildDataDb.Channels
 
 import Data.Time.Clock
+import System.Random
 
-crawlerSupervisor :: DbContext -> IO ()
-crawlerSupervisor ctx =
+type TotalShards = Int
+
+crawlerSupervisor :: DbContext -> TotalShards -> IO ()
+crawlerSupervisor ctx totalshards =
     do
         activeChannels <- getActiveChannels ctx
 
@@ -42,13 +45,15 @@ crawlerSupervisor ctx =
             then putStrLn $ "CrawlerSupervisor: Scheduling " ++ show (length finalJobCandidates) ++ " new job(s)."
             else return ()
 
+        winner <- randomRIO (0, totalshards - 1) -- todo allocate smarter?
+
         mapM_ (\(channelId, _) -> saveJob ctx 
             Job { jobId = Nothing,
                   jobStatus = Queued,
-                  jobOwner = 0, -- todo allocate across shards
+                  jobOwner = winner, 
                   jobChannel = channelId
                 }) finalJobCandidates 
 
         threadDelay (1 * 10^6)
-        crawlerSupervisor ctx
+        crawlerSupervisor ctx totalshards
         

@@ -16,6 +16,8 @@ dependencies:
   - discord-haskell
   - db-library
   - regex-compat
+  - configurator
+  - random
 
 executables:
   interface:

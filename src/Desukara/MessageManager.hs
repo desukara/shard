@@ -12,17 +12,22 @@ import Data.Time.Clock
 import Data.Time.Format
 import qualified Data.Text as T
 import Text.Regex
-
+import System.Random
 
 import Discord
-
 import qualified Discord as DS
 
 import DbLib
 import DbLib.JobManagerDb.Jobs
 
-messageManager :: Chan (Either GatewayException Event) -> (RestChan, Gateway, [ThreadIdType]) -> DbContext -> IO ()
-messageManager chan dis ctx = 
+type TotalJobRunners = Int
+type BotId = String
+
+-- todo consistent dbcontext / others order in typesig
+messageManager :: BotId
+               -> TotalJobRunners
+               -> Chan (Either GatewayException Event) -> (RestChan, Gateway, [ThreadIdType]) -> DbContext -> IO ()
+messageManager botid totalrunners chan dis ctx = 
     do
         e <- readChan chan
 
@@ -34,12 +39,12 @@ messageManager chan dis ctx =
                         channel = messageChannel m
                         mentions = messageMentions m
                         -- todo configurable
-                        mentioned = [] /= filter (\u -> show (userId u) == "513212824231870464") mentions
+                        mentioned = [] /= filter (\u -> show (userId u) == botid) mentions
 
                     when mentioned (handleMessage m)
             _ -> return ()
         
-        messageManager chan dis ctx
+        messageManager botid totalrunners chan dis ctx -- todo: repeatedly?
     where
 
         handleMessage msg = 
@@ -62,11 +67,13 @@ messageManager chan dis ctx =
 
                                 sendMessage "Sure thing!"
 
+                                winner <- randomRIO (0, totalrunners - 1) -- todo allocate smarter?
+                                
                                 currentTime <- getCurrentTime
                                 createJob ctx defaultJob {
                                     jobTitle = user ++ "'s Query",
                                         -- ++ formatTime defaultTimeLocale "%D, %l:%M%P UTC" currentTime,
-                                    jobOwner = 0,
+                                    jobOwner = winner,
                                     jobChannel = show (messageChannel msg),
                                     jobParameters = RScript {
                                         rsScript = code,
