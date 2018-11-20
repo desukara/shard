@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8294bf3bce9da805b9c7fd4fa6ca3098144aecd1da4d896bea6acc0c4884839d
+-- hash: a327a41b1aa4ade22c0e3a2dd2aa7e7523ead5991110b27047ad2c04e56c79d2
 
 name:           desukara-shard
 version:        0.1.0.0
@@ -32,7 +32,7 @@ executable interface
   build-depends:
       base >=4.7 && <5
     , configurator
-    , db-library
+    , desukara-dblib
     , discord-haskell
     , random
     , regex-compat

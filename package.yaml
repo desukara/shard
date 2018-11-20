@@ -14,7 +14,7 @@ dependencies:
   - text
   - time
   - discord-haskell
-  - db-library
+  - desukara-dblib 
   - regex-compat
   - configurator
   - random
