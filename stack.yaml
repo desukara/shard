@@ -41,7 +41,7 @@ extra-deps:
 - github: desukara/dblib
   commit: 90e52a557b63a988e16ef8f631d77e05c5450100
 - github: noneucat/discord-haskell
-  commit: 179b9a4c8c1befecd9433740bd82304de4698c24
+  commit: 44ba68ec184515a52e9f0dcc614a0048d82dc56e 
 - bson-mapping-0.1.5.1
 
 # Override default flag values for local packages and extra-deps
