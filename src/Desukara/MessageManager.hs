@@ -20,6 +20,7 @@ import qualified Discord as DS
 
 import DbLib
 import DbLib.GuildDataDb.Channels
+import qualified DbLib.GuildDataDb.Messages as DB
 import qualified DbLib.GuildDataDb.Channels as DB
 import DbLib.JobManagerDb.Jobs
 
@@ -131,7 +132,8 @@ messageManager botid totalrunners chan dis ctx =
                                                     | "ds@disableChannel" `isInfixOf` text ->
                                                         do
                                                             setChannelEnabled ctx channelId False 
-                                                            sendMessage . T.pack $ "Disabled indexing and queries in this channel!"
+                                                            DB.pruneMessagesByChannel ctx channelId
+                                                            sendMessage . T.pack $ "Disabled indexing and queries in this channel! (& pruned collected data)"
                                                             return ()
                                                     | True -> return ()
                                             else sendMessage "Sorry, you don't have the permissions to do that..."

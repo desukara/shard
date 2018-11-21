@@ -60,7 +60,7 @@ main = do
     Left _ -> putStrLn "Could not connect"
     Right ctx -> do
       chan' <- dupChan chan
-      forkIO $ monitor chan' ctx
+      forkIO $ monitor chan' dis ctx
 
       chan'' <- dupChan chan
       forkIO $ messageManager botid totalJobRunners chan'' dis ctx
