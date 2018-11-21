@@ -88,7 +88,8 @@ messageManager botid totalrunners chan dis ctx =
                                     jobParameters = RScript {
                                         rsScript = code,
                                         rsTrusted = ""
-                                    }
+                                    },
+                                    jobRequestedChannelData = [ show (messageChannel msg) ] -- todo
                                 } 
                             Nothing -> do
                                 sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
