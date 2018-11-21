@@ -20,6 +20,6 @@ dependencies:
   - random
 
 executables:
-  interface:
+  shard:
     source-dirs:      src
     main:             Main.hs
