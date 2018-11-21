@@ -65,7 +65,7 @@ monitor chan dis ctx =
                                 ++  "It's wisest to wait in order to get accurate reports."
                                 ,   ""
                                 ,   "- I'll aggregate *all messages available* from enabled channels for *as log as the the channel is enabled* "
-                                ++  "in order to generate accurate reports (with exceptions as defined by Section 2.4 & 2.5 of the Discord Developer ToS)*. "
+                                ++  "in order to generate accurate reports *(with exceptions as defined by Section 2.4 & 2.5 of the Discord Developer ToS)*. "
                                 ++  "Channels disabled using `ds@disableChannel` will have their data pruned as soon as possible."
                                 ,   ""
                                 ,   "- I'll prune all messages from this guild as soon as possible if I leave the guild "
