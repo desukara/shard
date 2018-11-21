@@ -74,10 +74,8 @@ main = do
             forkIO $ jobFlusher ctx dis
             return ()
 
-      return ()
-
-  let idleLoop = do
-        threadDelay (1 * 10^6)
-        idleLoop
-  idleLoop
+      let idleLoop = do
+            threadDelay (1 * 10^6)
+            idleLoop
+      idleLoop
 
