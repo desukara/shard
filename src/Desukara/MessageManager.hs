@@ -20,6 +20,7 @@ import qualified Discord as DS
 
 import DbLib
 import DbLib.GuildDataDb.Channels
+import qualified DbLib.GuildDataDb.Users as DB
 import qualified DbLib.GuildDataDb.Messages as DB
 import qualified DbLib.GuildDataDb.Channels as DB
 import DbLib.JobManagerDb.Jobs
@@ -65,6 +66,13 @@ messageManager botid totalrunners chan dis ctx =
                     sendMessage t = do
                         restCall dis (CreateMessage ds_channel t Nothing) 
                         return ()
+
+                -- log user
+                DB.saveUser ctx DB.GuildUser {
+                    DB.guildUserId = show userid,
+                    DB.guildUserName = userName user,
+                    DB.guildUserDiscrim = userDiscrim user 
+                }
 
                 -- todo: really inefficient...
                 isChannelEnabled <- fmap ((channelId `elem`) . (map DB.channelId)) $ getActiveChannels ctx

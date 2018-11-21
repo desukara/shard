@@ -13,7 +13,9 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.Chan
 import Data.Time.Clock
 
-jobFlusher :: DbContext -> (RestChan, Gateway, [ThreadIdType]) -> IO ()
+type DisCtx = (RestChan, Gateway, [ThreadIdType])
+
+jobFlusher :: DbContext -> DisCtx -> IO ()
 jobFlusher ctx dis =
     do
         dirtyJobs <- getDirtyJobs ctx
