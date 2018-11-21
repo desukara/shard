@@ -48,9 +48,10 @@ crawler dis ctx no =
                             do 
                                 let mostRecentMsg = show $ fromJust $ channelLastMessage dc
                                     indexUntilMsg = fmap DB.messageId maybeIndexed 
+                                    guild = show $ channelGuild dc
 
                                 success <- crawlLoop dis ctx
-                                                     channel mostRecentMsg indexUntilMsg
+                                                     channel guild mostRecentMsg indexUntilMsg
 
                                 putStrLn $ "Crawl finished. Success: " ++ show success
 
@@ -60,9 +61,9 @@ crawler dis ctx no =
         crawler dis ctx no
 
 crawlLoop :: (RestChan, Gateway, [ThreadIdType]) -> DbContext 
-          -> String -> String -> Maybe String -> IO Bool
+          -> String -> String -> String -> Maybe String -> IO Bool
 crawlLoop dis ctx 
-          chan from until =
+          chan guild from until =
     do
         let ds_chan = fromInteger $ (read chan :: Integer)
             ds_from = fromInteger $ (read from :: Integer)
@@ -82,13 +83,14 @@ crawlLoop dis ctx
                         DB.messageId = show $ DS.messageId m,
                         DB.messageLastIndexed = currentTime,
                         DB.messageChannel = chan, 
-                        DB.messageGuild = fmap show $ DS.messageGuild m,
+                        DB.messageGuild = guild,
                         DB.messageAuthor = show $ userId $ DS.messageAuthor m,
                         DB.messageContents = T.unpack $ DS.messageText m, 
                         DB.messageTimestamp = DS.messageTimestamp m, 
                         DB.messageEditedTimestamp = DS.messageEdited m, 
                         DB.messageTTS = DS.messageTts m, 
                         DB.messageMentions = map (\u -> show $ userId u) (DS.messageMentions m),
+                        DB.messageMentionsEveryone = DS.messageEveryone m,
                         DB.messageMentionedRoles = map show (DS.messageMentionRoles m), 
                         DB.messageAttachments = map DS.attachmentUrl (DS.messageAttachments m),
                         DB.messageContainsEmbeds = length (DS.messageEmbeds m) > 0,
@@ -115,5 +117,5 @@ crawlLoop dis ctx
                     then return True
                     else do
                         threadDelay (2 * 10^6)
-                        crawlLoop dis ctx chan (last msgIds) until
+                        crawlLoop dis ctx chan guild (last msgIds) until
 
