@@ -126,7 +126,7 @@ messageManager botid totalrunners chan dis ctx =
                                 sendMessage $ T.pack $ "**:mag: __Catalog Search Results:__**\n\n" ++ matchText
                             Nothing -> sendMessage "No search query specified."
 
-                   | "ds!run" `isInfixOf` text ->
+                   | "ds!run" `isInfixOf` text && isChannelEnabled ->
                     do
                         tempt <- getCurrentTime
                         let channelAndDateRegex = mkRegex "<#(\\d+)> *: *([^;]+)"
