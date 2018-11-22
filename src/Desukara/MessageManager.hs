@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings, MultiWayIf #-}
+{-# LANGUAGE OverloadedStrings, MultiWayIf, FlexibleContexts #-}
 
 module Desukara.MessageManager (
     messageManager
@@ -61,6 +61,8 @@ messageManager botid totalrunners chan dis ctx =
         getCaptures [] = []
         getCaptures regex = concatMap tail (regex :: [[String]])
 
+        match' a b = match (makeRegexOpts defaultCompOpt{multiline=False} defaultExecOpt (a :: String)) b
+
         handleMessage msg = 
             do
                 let text = T.unpack $ messageText msg
@@ -86,10 +88,12 @@ messageManager botid totalrunners chan dis ctx =
                 isChannelEnabled <- fmap ((channelId `elem`) . (map DB.channelId)) $ getActiveChannels ctx
 
                 if | "ds!eval" `isInfixOf` text && isChannelEnabled -> 
-                        case getCaptures $ text =~ ("```r\n(.*)\n```" :: String) of
+                        case getCaptures $ ("```r(.*)```" `match'` text) of
                             [] -> sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
                             matches -> do
                                 let code = head matches 
+
+                                putStrLn $ show matches
 
                                 winner <- randomRIO (0, totalrunners - 1) -- todo allocate smarter?
                                 
@@ -109,7 +113,7 @@ messageManager botid totalrunners chan dis ctx =
                             } 
 
                    | "ds!search" `isInfixOf` text ->
-                        case getCaptures $ text =~ ("ds!search (.*)" :: String) of
+                        case getCaptures $ ("ds!search (.*)" `match'` text) of
                             [] -> sendMessage "No search query specified."
                             query -> do
                                 let keywords = splitOn " " (head query)
@@ -126,7 +130,7 @@ messageManager botid totalrunners chan dis ctx =
 
                    | "ds!run" `isInfixOf` text && isChannelEnabled ->
                     do
-                        let channelAndDateMatches =  text =~ ("<#([0-9]+)> *: *([^;]+)":: String)
+                        let channelAndDateMatches =  ("<#([0-9]+)> *: *([^;]+)" `match'` text)
                             -- channelOnlyRegex =  text =~ ("<#([0-9]+)>" :: String) :: [[String]]
 
                             parseDate query = (Nothing, Nothing) -- todo TODO parse
@@ -137,7 +141,7 @@ messageManager botid totalrunners chan dis ctx =
                                           $ channelAndDateMatches
 
 
-                        case getCaptures $ text =~ ("ds!run ([a-zA-Z0-9\\/\\-]+)" :: String) of
+                        case getCaptures $ ("ds!run ([a-zA-Z0-9\\/\\-]+)" `match'` text) of
                             [] -> sendMessage "Invalid use of `ds!run`."
                             command -> 
                                 if (head command) `elem` (map rcjCommand catalog) -- if command exists in the catalog
