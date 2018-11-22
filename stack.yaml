@@ -38,6 +38,8 @@ packages:
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
 extra-deps:
+- github: desukara/catalog
+  commit: master
 - github: desukara/dblib
   commit: master 
 - github: noneucat/discord-haskell
