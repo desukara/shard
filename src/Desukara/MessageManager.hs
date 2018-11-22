@@ -104,7 +104,9 @@ messageManager botid totalrunners chan dis ctx =
                                         rsScript = code,
                                         rsTrusted = ""
                                     },
-                                    jobRequestedChannelData = [ show (messageChannel msg) ] -- todo
+                                    jobRequestedChannelData = [ show (messageChannel msg) ], -- todo
+                                    jobRequestedChannelDataFrom = [ Nothing ],
+                                    jobRequestedChannelDataUntil = [ Nothing ]
                                 } 
                             Nothing -> sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
 
