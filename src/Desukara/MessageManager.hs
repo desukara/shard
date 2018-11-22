@@ -16,7 +16,7 @@ import Data.Time
 import Data.Time.Clock
 import Data.Time.Format
 import qualified Data.Text as T
-import Text.Regex
+import Text.Regex.TDFA
 import System.Random
 
 import Discord
@@ -84,12 +84,9 @@ messageManager botid totalrunners chan dis ctx =
                 isChannelEnabled <- fmap ((channelId `elem`) . (map DB.channelId)) $ getActiveChannels ctx
 
                 if | "ds!eval" `isInfixOf` text && isChannelEnabled -> 
-                    do
-                        let mkRegex' s = mkRegexWithOpts s False False 
-                            rRegex = mkRegex' "```r(.*)```"
-
-                        case matchRegex rRegex text of
-                            Just matches -> do
+                        case getAllTextMatches $ text =~ ("```r(.*)```" :: String) of
+                            [] -> sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
+                            matches -> do
                                 let code = head matches 
 
                                 winner <- randomRIO (0, totalrunners - 1) -- todo allocate smarter?
@@ -107,14 +104,12 @@ messageManager botid totalrunners chan dis ctx =
                                     jobRequestedChannelData = [ show (messageChannel msg) ], -- todo
                                     jobRequestedChannelDataFrom = [ Nothing ],
                                     jobRequestedChannelDataUntil = [ Nothing ]
-                                } 
-                            Nothing -> sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
+                            } 
 
                    | "ds!search" `isInfixOf` text ->
-                    do
-                        let searchRegex = mkRegex "ds!search (.*)"
-                        case matchRegex searchRegex text of
-                            Just query -> do
+                        case getAllTextMatches $ text =~ ("ds!search (.*)" :: String) of
+                            [] -> sendMessage "No search query specified."
+                            query -> do
                                 let keywords = splitOn " " (head query)
                                     intersect' x = intersect (rcjTags x) keywords
                                     matches = sortBy (\a b -> (length $ intersect' a) `compare` (length $ intersect' b)) 
@@ -122,31 +117,27 @@ messageManager botid totalrunners chan dis ctx =
                                     top = take 5 matches 
                                     matchText = if null top
                                         then "*(No matches.)*"
-                                        else concat $ map (\rcj -> 
-                                                   ":small_orange_diamond: *" ++ rcjCommand rcj ++ "* **:** `" ++ rcjDescription rcj ++ "`  \n") top 
+                                        else concatMap (\rcj -> 
+                                                    ":small_orange_diamond: *" ++ rcjCommand rcj ++ "* **:** `" ++ rcjDescription rcj ++ "`  \n") top 
 
                                 sendMessage $ T.pack $ "**:mag: __Catalog Search Results:__**\n\n" ++ matchText
-                            Nothing -> sendMessage "No search query specified."
 
                    | "ds!run" `isInfixOf` text && isChannelEnabled ->
                     do
-                        let channelAndDateRegex = mkRegex "<#([0-9]+)> *: *([^;]+)"
-                            channelOnlyRegex = mkRegex "<#([0-9]+)>"
+                        let channelAndDateMatches =  text =~ ("<#([0-9]+)> *: *([^;]+)":: String)
+                            -- channelOnlyRegex =  text =~ ("<#([0-9]+)>" :: String) :: [[String]]
 
                             parseDate query = (Nothing, Nothing) -- todo TODO parse
 
-                            dataRequests1 =
-                                case matchRegex channelAndDateRegex text of
-                                    Just matches -> map (\x -> let channel = x !! 0
-                                                                   datequery = x !! 1
+                            dataRequests1 = map (\x -> let  channel = x !! 1
+                                                            datequery = x !! 2
                                                                 in (channel, fst (parseDate datequery), snd (parseDate datequery))) 
-                                                    $ chunksOf 2 matches
-                                    Nothing -> []
+                                          $ channelAndDateMatches
 
-                            commandRegex = mkRegex "ds!run ([a-zA-Z0-9\\/\\-]+)"
 
-                        case matchRegex commandRegex text of
-                            Just command -> 
+                        case getAllTextMatches $ text =~ ("ds!run ([a-zA-Z0-9\\/\\-]+)" :: String) of
+                            [] -> sendMessage "Invalid use of `ds!run`."
+                            command -> 
                                 if (head command) `elem` (map rcjCommand catalog) -- if command exists in the catalog
                                 then mapM_ (\rcj -> -- run that command
                                     if rcjCommand rcj == (head command)
@@ -172,8 +163,6 @@ messageManager botid totalrunners chan dis ctx =
                                         return ()
                                     else return ()) catalog
                                 else sendMessage $ T.pack $ "No command named `" ++ (head command) ++ "`."
-                            Nothing -> sendMessage "Invalid use of `ds!run`."
-
 
                    | "ds@" `isInfixOf` text -> do
                         -- check perms

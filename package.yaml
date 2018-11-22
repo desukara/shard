@@ -17,7 +17,7 @@ dependencies:
   - discord-haskell
   - desukara-catalog
   - desukara-dblib 
-  - regex-compat
+  - regex-tdfa
   - configurator
   - random
 
