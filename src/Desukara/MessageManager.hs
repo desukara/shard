@@ -58,6 +58,8 @@ messageManager botid totalrunners chan dis ctx =
         
         messageManager botid totalrunners chan dis ctx -- todo: repeatedly?
     where
+        getCaptures [] = []
+        getCaptures regex = concatMap tail (regex :: [[String]])
 
         handleMessage msg = 
             do
@@ -84,7 +86,7 @@ messageManager botid totalrunners chan dis ctx =
                 isChannelEnabled <- fmap ((channelId `elem`) . (map DB.channelId)) $ getActiveChannels ctx
 
                 if | "ds!eval" `isInfixOf` text && isChannelEnabled -> 
-                        case getAllTextMatches $ text =~ ("```r(.*)```" :: String) of
+                        case getCaptures $ text =~ ("```r\n(.*)\n```" :: String) of
                             [] -> sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
                             matches -> do
                                 let code = head matches 
@@ -107,7 +109,7 @@ messageManager botid totalrunners chan dis ctx =
                             } 
 
                    | "ds!search" `isInfixOf` text ->
-                        case getAllTextMatches $ text =~ ("ds!search (.*)" :: String) of
+                        case getCaptures $ text =~ ("ds!search (.*)" :: String) of
                             [] -> sendMessage "No search query specified."
                             query -> do
                                 let keywords = splitOn " " (head query)
@@ -135,7 +137,7 @@ messageManager botid totalrunners chan dis ctx =
                                           $ channelAndDateMatches
 
 
-                        case getAllTextMatches $ text =~ ("ds!run ([a-zA-Z0-9\\/\\-]+)" :: String) of
+                        case getCaptures $ text =~ ("ds!run ([a-zA-Z0-9\\/\\-]+)" :: String) of
                             [] -> sendMessage "Invalid use of `ds!run`."
                             command -> 
                                 if (head command) `elem` (map rcjCommand catalog) -- if command exists in the catalog
