@@ -8,7 +8,11 @@ import Control.Monad (when)
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.Chan
 import Data.Bits
-import Data.List (isInfixOf, intersect)
+import Data.Ord (compare)
+import Data.List (sortBy, isInfixOf, intersect)
+import Data.List.Split (splitOn, chunksOf)
+import Data.Maybe (fromJust)
+import Data.Time
 import Data.Time.Clock
 import Data.Time.Format
 import qualified Data.Text as T
@@ -17,6 +21,8 @@ import System.Random
 
 import Discord
 import qualified Discord as DS
+
+import Desukara.RCatalog
 
 import DbLib
 import DbLib.GuildDataDb.Channels
@@ -46,8 +52,8 @@ messageManager botid totalrunners chan dis ctx =
                         -- todo configurable
                         mentioned = [] /= filter (\u -> show (userId u) == botid) mentions
 
-                    -- when mentioned (handleMessage m)
-                    handleMessage m
+                    when (not $ userIsBot $ messageAuthor m) (handleMessage m)
+                    -- handleMessage m
             _ -> return ()
         
         messageManager botid totalrunners chan dis ctx -- todo: repeatedly?
@@ -100,11 +106,74 @@ messageManager botid totalrunners chan dis ctx =
                                     },
                                     jobRequestedChannelData = [ show (messageChannel msg) ] -- todo
                                 } 
-                            Nothing -> do
-                                sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
-                                return ()
+                            Nothing -> sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
 
-                        return ()
+                   | "ds!search" `isInfixOf` text ->
+                    do
+                        let searchRegex = mkRegex "ds!search (.*)"
+                        case matchRegex searchRegex text of
+                            Just query -> do
+                                let keywords = splitOn " " (head query)
+                                    intersect' x = intersect (rcjTags x) keywords
+                                    matches = sortBy (\a b -> (length $ intersect' a) `compare` (length $ intersect' b)) 
+                                            $ filter (\rcj -> length (intersect' rcj) > 0) catalog
+                                    top = take 5 matches 
+                                    matchText = if null top
+                                        then "*(No matches.)*"
+                                        else concat $ map (\rcj -> 
+                                                   ":small_orange_diamond: *" ++ rcjCommand rcj ++ "* **:** `" ++ rcjDescription rcj ++ "`  \n") top 
+
+                                sendMessage $ T.pack $ "**:mag: __Catalog Search Results:__**\n\n" ++ matchText
+                            Nothing -> sendMessage "No search query specified."
+
+                   | "ds!run" `isInfixOf` text ->
+                    do
+                        tempt <- getCurrentTime
+                        let channelAndDateRegex = mkRegex "<#(\\d+)> *: *([^;]+)"
+                            channelOnlyRegex = mkRegex "<#(\\d+)>"
+
+                            parseDate query = (Nothing, Nothing) -- todo TODO parse
+
+                            dataRequests1 =
+                                case matchRegex channelAndDateRegex text of
+                                    Just matches -> map (\x -> let channel = x !! 0
+                                                                   datequery = x !! 1
+                                                                in (channel, fst (parseDate datequery), snd (parseDate datequery))) 
+                                                    $ chunksOf 2 matches
+                                    Nothing -> []
+
+                            commandRegex = mkRegex "ds!run (\\w+)"
+
+                        case matchRegex commandRegex text of
+                            Just command -> 
+                                if (head command) `elem` (map rcjCommand catalog) -- if command exists in the catalog
+                                then mapM_ (\rcj -> -- run that command
+                                    if rcjCommand rcj == (head command)
+                                    then do
+                                        winner <- randomRIO (0, totalrunners - 1) -- todo allocate smarter?
+                                        currentTime <- getCurrentTime 
+
+                                        let (channels, from, until) = unzip3 dataRequests1
+
+                                        createJob ctx defaultJob {
+                                            jobTitle = (head command) ++ " (" ++ username ++ ")",
+                                            jobOwner = winner,
+                                            jobChannel = show (messageChannel msg),
+                                            jobParameters = RScript {
+                                                rsScript = rcjScript rcj,
+                                                rsTrusted = ""
+                                            },
+                                            jobRequestedChannelData = channels,
+                                            jobRequestedChannelDataFrom = from,
+                                            jobRequestedChannelDataUntil = until 
+                                        }
+
+                                        return ()
+                                    else return ()) catalog
+                                else sendMessage $ T.pack $ "No command named `" ++ (head command) ++ "`."
+                            Nothing -> sendMessage "Invalid use of `ds!run`."
+
+
                    | "ds@" `isInfixOf` text -> do
                         -- check perms
                         case maybeGuild of
