@@ -128,9 +128,8 @@ messageManager botid totalrunners chan dis ctx =
 
                    | "ds!run" `isInfixOf` text && isChannelEnabled ->
                     do
-                        tempt <- getCurrentTime
-                        let channelAndDateRegex = mkRegex "<#(\\d+)> *: *([^;]+)"
-                            channelOnlyRegex = mkRegex "<#(\\d+)>"
+                        let channelAndDateRegex = mkRegex "<#([0-9]+)> *: *([^;]+)"
+                            channelOnlyRegex = mkRegex "<#([0-9]+)>"
 
                             parseDate query = (Nothing, Nothing) -- todo TODO parse
 
@@ -142,7 +141,7 @@ messageManager botid totalrunners chan dis ctx =
                                                     $ chunksOf 2 matches
                                     Nothing -> []
 
-                            commandRegex = mkRegex "ds!run (\\w+)"
+                            commandRegex = mkRegex "ds!run ([a-zA-Z0-9\\/\\-]+)"
 
                         case matchRegex commandRegex text of
                             Just command -> 
