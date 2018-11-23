@@ -49,31 +49,33 @@ monitor chan dis ctx =
 
                         restCall dis (CreateMessage defaultchannel "" 
                             $ Just Embed {
-                                embedTitle = "Dearest server owner:",
+                                embedTitle = "Hello all!",
                                 embedType = "rich",
                                 embedDesc = intercalate "  \n" 
                                 [   "**Thanks for the invite!**"
-                                
+                                ,   "I aggregate messages and let you generate graphs and statistics from them!"
                                 ,   "Before we get started, here are a couple things you should know:"
                                 ,   ""
-                                ,   "- I won't aggregate messages from channels unless you *explicitly enable them*. Use `ds@enableChannel` "
+                                ,   "- I won't aggregate messages from channels unless you *explicitly enable them*. Type `ds@enableChannel` "
                                 ++  "in the appropriate channel to *enable aggregation of all messages available* in the channel "
                                 ++  "*(in accordance with Section 2.5d of the Discord Developer ToS)*. This is required to use any data-related "
                                 ++  "commands in a channel."
                                 ,   ""
-                                ,   "- I can take ~10 to 20 minutes to completely aggregate messages from a channel after enabling. "
-                                ++  "It's wisest to wait in order to get accurate reports."
+                                ,   "- I can take ~10 to 20 minutes to completely aggregate messages from a channel after enabling it. "
+                                ++  "I'll then index a channel's new messages every 20 minutes. "
+                                ++  "It's wise to wait at least 10 minutes after enabling a channel before running a query in order to "
+                                ++  "get accurate reports."
                                 ,   ""
-                                ,   "- I'll aggregate *all messages available* from enabled channels for *as log as the the channel is enabled* "
+                                ,   "- I'll aggregate *all messages available* from enabled channels for *as long as the the channel is enabled* "
                                 ++  "in order to generate accurate reports *(with exceptions as defined by Section 2.4 & 2.5 of the Discord Developer ToS)*. "
                                 ++  "Channels disabled using `ds@disableChannel` will have their data pruned as soon as possible."
                                 ,   ""
                                 ,   "- I'll prune all messages from this guild as soon as possible if I leave the guild "
                                 ++  "*(in accordance with Section 2.4 of the Discord Developer ToS)*."
                                 ,   "" 
-                                ,   "That's all! Thanks, and have fun!"
+                                ,   "That's all! To get started, type `ds!help` to get a list of commands available. Thanks, and have fun!"
                                 ,   ""
-                                ,   "*~ Sleepy, 2nd Class Angel*"
+                                ,   "*~ Sleepy, the 2nd Class Angel*"
                                 ],
                                 embedUrl = "",
                                 embedTime = currentTime,
