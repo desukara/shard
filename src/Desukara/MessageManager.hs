@@ -138,7 +138,7 @@ messageManager botid totalrunners chan dis ctx =
 
                             parseDate query =
                                 let matchRange = getCaptures $
-                                        match' "([0-9]{2})\\/([0-9]{2})\\/([0-9]{2}).*-.*([0-9]{2})\\/([0-9]{2})\\/([0-9]{2})" query
+                                        match' "([0-9]{1,2})\\/([0-9]{1,2})\\/([0-9]{2}).*-.*([0-9]{1,2})\\/([0-9]{1,2})\\/([0-9]{2})" query
                                     matchPastN = getCaptures $
                                         match' "past (.+) (.+)" query
                                 in if 
@@ -208,7 +208,7 @@ messageManager botid totalrunners chan dis ctx =
                                           $ channelAndDateMatches
                             dataRequests1Channels = map (\(chan, _, _) -> chan) dataRequests1
 
-                            dataRequests2Partial = filter (\(chan, _, _) -> chan `elem` dataRequests1Channels) 
+                            dataRequests2Partial = filter (\(chan, _, _) -> chan `notElem` dataRequests1Channels) 
                                                  $ map (\chan -> (chan, Nothing, Nothing)) channelOnlyRegex
 
                         case getCaptures $ ("ds!run ([a-zA-Z0-9\\/\\-]+)" `match'` text) of
