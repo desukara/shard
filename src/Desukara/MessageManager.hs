@@ -302,7 +302,7 @@ messageManager botid totalrunners chan dis ctx =
                                     Field "**ds!run** *command [@user, ...] [#channel: optionalDateRange; ...]*" 
                                        (   "Run a command from the catalog with data from the given channels (and an optional date range).  \n"
                                         ++ "*e.g.* `ds!run graphChannelActivity #general`  \n"
-                                        ++ "`ds!run graphChannelActivity #botspam: past 5 days; #memes: 12/28/18-01/01/19`"
+                                        ++ "`ds!run graphChannelActivity #botspam: past 5 days; #memes: 12/28/18-01/01/19`  \n"
                                         ++ "`ds!run sentimentAnalysis @cat protector 40,000#0258 #general: past 1 year`")
                                        True,
                                     Field "**ds!eval** *\\`\\`\\`R [rCode] \\`\\`\\`*" 
