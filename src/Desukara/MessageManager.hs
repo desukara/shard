@@ -282,6 +282,35 @@ messageManager botid totalrunners chan dis ctx =
                                             else sendMessage "Sorry, you don't have the permissions to do that..."
                                         return ()
                             Nothing -> return ()
+
+                   | "ds!help" `isInfixOf` text -> do
+                        restCall dis (CreateMessage ds_channel "" 
+                            $ Just Embed {
+                                embedTitle = "Desukara - Available Commands",
+                                embedType = "rich",
+                                embedDesc = "",
+                                embedUrl = "",
+                                embedTime = currentTime,
+                                embedColor = 16567412,
+                                embedFields = [
+                                    Field "**ds!search** *[keywords, ...]*" 
+                                       (   "Search for a command in the catalog using keywords.  \n"
+                                        ++ "*e.g.* `ds!search graph activity`")
+                                       False,
+                                    Field "**ds!run** *command [#channel: optionalDateRange; ...]*" 
+                                       (   "Run a command from the catalog with data from the given channels (and an optional date range).  \n"
+                                        ++ "*e.g.* `ds!run graphChannelActivity #general`  \n"
+                                        ++ "`ds!run graphChannelActivity #general: 12/28/18-01/01/19`  \n"
+                                        ++ "`ds!run graphChannelActivity #general: past 5 days; #botspam; #memes: past 5 months`")
+                                       True,
+                                    Field "**ds!eval** *\\`\\`\\`R [rCode] \\`\\`\\`*" 
+                                       (   "Evaluate a block of R code. Useful for testing additions to the catalog.  \n"
+                                       ++  "Further documentation planned." ) True,
+                                    Field "**ds@enableChannel** (admin)" "Enable data aggregation from the channel." True,
+                                    Field "**ds@disableChannel** (admin)" "Disable data aggregation from the channel and mark data for deletion." True
+                                ]
+                            })
+                        return ();
                    | True -> return ()
 
 

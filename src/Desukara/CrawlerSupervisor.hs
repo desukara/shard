@@ -33,7 +33,7 @@ crawlerSupervisor ctx totalshards =
             minimumTimeLimit = filter (\(_, x) -> 
                                 case x of
                                     Just job -> currentTime `diffUTCTime` (jobCreationDate job)
-                                        > 20*60
+                                        > 20*60 -- crawl time in seconds
                                         -- > 30
                                     Nothing  -> True) noPendingJobs
 
