@@ -135,6 +135,7 @@ messageManager botid totalrunners chan dis ctx =
                     do
                         let channelAndDateMatches =  ("<#([0-9]+)> *: *([^;]+)" `match'` text)
                             channelOnlyRegex = getCaptures $ ("<#([0-9]+)>" `match'` text)
+                            usersRegex = getCaptures $ ("<@([0-9]+)>" `match'` text)
 
                             parseDate query =
                                 let matchRange = getCaptures $
@@ -233,7 +234,8 @@ messageManager botid totalrunners chan dis ctx =
                                             },
                                             jobRequestedChannelData = channels,
                                             jobRequestedChannelDataFrom = from,
-                                            jobRequestedChannelDataUntil = until 
+                                            jobRequestedChannelDataUntil = until,
+                                            jobMentionedUsers = usersRegex
                                         }
 
                                         return ()
