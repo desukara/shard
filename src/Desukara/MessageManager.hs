@@ -134,7 +134,7 @@ messageManager botid totalrunners chan dis ctx =
                    | "ds!run" `isInfixOf` text && isChannelEnabled ->
                     do
                         let channelAndDateMatches =  ("<#([0-9]+)> *: *([^;]+)" `match'` text)
-                            -- channelOnlyRegex =  text =~ ("<#([0-9]+)>" :: String) :: [[String]]
+                            channelOnlyRegex = getCaptures $ ("<#([0-9]+)>" `match'` text)
 
                             parseDate query =
                                 let matchRange = getCaptures $
@@ -201,13 +201,15 @@ messageManager botid totalrunners chan dis ctx =
                                            else (Nothing, Nothing)
                                         
                                     | True -> (Nothing, Nothing)
-                                                  
 
                             dataRequests1 = map (\x -> let  channel = x !! 1
                                                             datequery = x !! 2
                                                                 in (channel, fst (parseDate datequery), snd (parseDate datequery))) 
                                           $ channelAndDateMatches
+                            dataRequests1Channels = map (\(chan, _, _) -> chan) dataRequests1
 
+                            dataRequests2Partial = filter (\(chan, _, _) -> chan `elem` dataRequests1Channels) 
+                                                 $ map (\chan -> (chan, Nothing, Nothing)) channelOnlyRegex
 
                         case getCaptures $ ("ds!run ([a-zA-Z0-9\\/\\-]+)" `match'` text) of
                             [] -> sendMessage "Invalid use of `ds!run`."
@@ -219,7 +221,7 @@ messageManager botid totalrunners chan dis ctx =
                                         winner <- randomRIO (0, totalrunners - 1) -- todo allocate smarter?
                                         currentTime <- getCurrentTime 
 
-                                        let (channels, from, until) = unzip3 dataRequests1
+                                        let (channels, from, until) = unzip3 (dataRequests1 ++ dataRequests2Partial)
 
                                         createJob ctx defaultJob {
                                             jobTitle = (head command) ++ " (" ++ username ++ ")",
