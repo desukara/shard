@@ -45,14 +45,14 @@ crawlerSupervisor ctx totalshards =
             then putStrLn $ "CrawlerSupervisor: Scheduling " ++ show (length finalJobCandidates) ++ " new job(s)."
             else return ()
 
-        winner <- randomRIO (0, totalshards - 1) -- todo allocate smarter?
-
-        mapM_ (\(channelId, _) -> saveJob ctx 
-            Job { jobId = Nothing,
-                  jobStatus = Queued,
-                  jobOwner = winner, 
-                  jobChannel = channelId
-                }) finalJobCandidates 
+        mapM_ (\(channelId, _) -> do
+            winner <- randomRIO (0, totalshards - 1) -- todo allocate smarter?
+            saveJob ctx 
+                Job {   jobId = Nothing,
+                        jobStatus = Queued,
+                        jobOwner = winner, 
+                        jobChannel = channelId
+                    }) finalJobCandidates 
 
         threadDelay (1 * 10^6)
         crawlerSupervisor ctx totalshards
