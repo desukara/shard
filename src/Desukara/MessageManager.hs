@@ -11,12 +11,13 @@ import Data.Bits
 import Data.Ord (compare)
 import Data.List (sortBy, isInfixOf, intersect)
 import Data.List.Split (splitOn, chunksOf)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isJust)
 import Data.Time
 import Data.Time.Clock
 import Data.Time.Format
 import qualified Data.Text as T
 import Text.Regex.TDFA
+import Text.Read (readMaybe)
 import System.Random
 
 import Discord
@@ -87,6 +88,8 @@ messageManager botid totalrunners chan dis ctx =
                 -- todo: really inefficient...
                 isChannelEnabled <- fmap ((channelId `elem`) . (map DB.channelId)) $ getActiveChannels ctx
 
+                currentTime <- getCurrentTime
+
                 if | "ds!eval" `isInfixOf` text && isChannelEnabled -> 
                         case getCaptures $ ("```r(.*)```" `match'` text) of
                             [] -> sendMessage "I couldn't find anything to run... (did you wrap your code with **```r** ?)"
@@ -133,7 +136,72 @@ messageManager botid totalrunners chan dis ctx =
                         let channelAndDateMatches =  ("<#([0-9]+)> *: *([^;]+)" `match'` text)
                             -- channelOnlyRegex =  text =~ ("<#([0-9]+)>" :: String) :: [[String]]
 
-                            parseDate query = (Nothing, Nothing) -- todo TODO parse
+                            parseDate query =
+                                let matchRange = getCaptures $
+                                        match' "([0-9]{2})\\/([0-9]{2})\\/([0-9]{2}).*-.*([0-9]{2})\\/([0-9]{2})\\/([0-9]{2})" query
+                                    matchPastN = getCaptures $
+                                        match' "past (.+) (.+)" query
+                                in if 
+                                    | not . null $ matchRange ->
+                                        let fm = readMaybe $ matchRange !! 0
+                                            fd = readMaybe $ matchRange !! 1 
+                                            fy = readMaybe $ matchRange !! 2
+
+                                            um = readMaybe $ matchRange !! 3
+                                            ud = readMaybe $ matchRange !! 4 
+                                            uy = readMaybe $ matchRange !! 5
+
+                                            fromDate = 
+                                                if isJust fm && isJust fd && isJust fy
+                                                then fmap (\x -> UTCTime x 0) $ fromGregorianValid 
+                                                        (2000 + fromJust fy)
+                                                        (fromJust fm)
+                                                        (fromJust fd) 
+                                                else Nothing
+                                            untilDate = 
+                                                if isJust um && isJust ud && isJust uy
+                                                then fmap (\x -> UTCTime x 0) $ fromGregorianValid 
+                                                        (2000 + fromJust uy)
+                                                        (fromJust um)
+                                                        (fromJust ud) 
+                                                else Nothing
+                                        in (fromDate, untilDate)
+
+                                    | not . null $ matchPastN ->
+                                        let maybeQuantity = readMaybe $ matchPastN !! 0
+                                            units = matchPastN !! 1
+                                        in if isJust maybeQuantity 
+                                           then let quantity = fromJust maybeQuantity
+
+                                                    second = 1
+                                                    minute = second * 60
+                                                    hour = minute * 60
+                                                    day = hour * 24
+                                                    week = day * 7
+                                                    month = day * 31
+                                                    year = month * 12
+
+                                                    diff = fromIntegral $ case units of
+                                                        "minute"    -> quantity * minute
+                                                        "minutes"   -> quantity * minute
+                                                        "hour"      -> quantity * hour
+                                                        "hours"     -> quantity * hour
+                                                        "day"       -> quantity * day
+                                                        "days"      -> quantity * day
+                                                        "week"      -> quantity * week
+                                                        "weeks"     -> quantity * week
+                                                        "month"     -> quantity * month
+                                                        "months"    -> quantity * month
+                                                        "year"      -> quantity * year
+                                                        "years"     -> quantity * year
+                                                        _           -> year
+
+                                                    fromDate = addUTCTime (-1 * diff) currentTime
+                                                in (Just fromDate, Nothing) -- todo
+                                           else (Nothing, Nothing)
+                                        
+                                    | True -> (Nothing, Nothing)
+                                                  
 
                             dataRequests1 = map (\x -> let  channel = x !! 1
                                                             datequery = x !! 2
