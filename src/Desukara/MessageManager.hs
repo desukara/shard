@@ -257,12 +257,12 @@ messageManager botid totalrunners chan dis ctx =
                                 -- get admin roles
                                 adminRoles <- do
                                    maybeRoles <- restCall dis (GetGuildRoles guildId)
-                                   return $ case maybeRoles of
-                                        Right roles -> map roleID $
-                                            filter (((>) 0) . ((.&.) 8) . rolePerms) roles
-                                        Left _ -> []
+                                   case maybeRoles of
+                                        Right roles -> do
+                                            return $ map roleID $ 
+                                                filter ((> 0) . (8 .&.) . rolePerms) roles
+                                        Left _ -> return []
                                 g <- restCall dis (GetGuildMember guildId (userId user)) 
-                                
                                 case g of
                                     Left _ -> return ()
                                     Right guildMember -> do
