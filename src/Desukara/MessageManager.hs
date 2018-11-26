@@ -126,7 +126,7 @@ messageManager botid totalrunners chan dis ctx =
                                             $ filter (\rcj -> length (intersect' rcj) > 0) catalog
                                     top = take 5 matches 
                                     matchText = if null top
-                                        then "*(No matches.)*"
+                                        then "*(No results. All commands available: https://github.com/desukara/catalog/blob/master/src/Desukara/RCatalog.hs)*"
                                         else concatMap (\rcj -> 
                                                     ":small_orange_diamond: *" ++ rcjCommand rcj ++ "* **:** `" ++ rcjDescription rcj ++ "`  \n") top 
 
