@@ -53,7 +53,7 @@ monitor chan dis ctx =
                                 embedType = "rich",
                                 embedDesc = intercalate "  \n" 
                                 [   "**Thanks for the invite!**"
-                                ,   "I aggregate messages and let you generate graphs and statistics from them!"
+                                ,   "I aggregate messages and let you generate graphs and statistics about them!"
                                 ,   "Before we get started, here are a couple things you should know:"
                                 ,   ""
                                 ,   "- I won't aggregate messages from channels unless you *explicitly enable them*. Type `ds@enableChannel` "

@@ -9,7 +9,7 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Concurrent.Chan
 import Data.Bits
 import Data.Ord (compare)
-import Data.List (sortBy, isInfixOf, intersect)
+import Data.List (sortBy, isInfixOf, intersect, intercalate)
 import Data.List.Split (splitOn, chunksOf)
 import Data.Maybe (fromJust, isJust)
 import Data.Time
@@ -27,6 +27,7 @@ import Desukara.RCatalog
 
 import DbLib
 import DbLib.GuildDataDb.Channels
+import DbLib.GuildDataDb.Guilds
 import qualified DbLib.GuildDataDb.Users as DB
 import qualified DbLib.GuildDataDb.Messages as DB
 import qualified DbLib.GuildDataDb.Channels as DB
@@ -280,6 +281,48 @@ messageManager botid totalrunners chan dis ctx =
                                                             DB.pruneMessagesByChannel ctx channelId
                                                             sendMessage . T.pack $ "Disabled indexing and queries in this channel! (& pruned collected data)"
                                                             return ()
+                                                    | "ds@about" `isInfixOf` text ->
+                                                        do
+                                                            currentTime <- getCurrentTime
+
+                                                            restCall dis (CreateMessage ds_channel "" 
+                                                                $ Just Embed {
+                                                                    embedTitle = "Hello all!",
+                                                                    embedType = "rich",
+                                                                    embedDesc = intercalate "  \n" 
+                                                                    [   "**Thanks for the invite!**"
+                                                                    ,   "I aggregate messages and let you generate graphs and statistics about them!"
+                                                                    ,   "Before we get started, here are a couple things you should know:"
+                                                                    ,   ""
+                                                                    ,   "- I won't aggregate messages from channels unless you *explicitly enable them*. Type `ds@enableChannel` "
+                                                                    ++  "in the appropriate channel to *enable aggregation of all messages available* in the channel "
+                                                                    ++  "*(in accordance with Section 2.5d of the Discord Developer ToS)*. This is required to use any data-related "
+                                                                    ++  "commands in a channel."
+                                                                    ,   ""
+                                                                    ,   "- I can take ~10 to 20 minutes to completely aggregate messages from a channel after enabling it. "
+                                                                    ++  "I'll then index a channel's new messages every 20 minutes. "
+                                                                    ++  "It's wise to wait at least 10 minutes after enabling a channel before running a query in order to "
+                                                                    ++  "get accurate reports."
+                                                                    ,   ""
+                                                                    ,   "- I'll aggregate *all messages available* from enabled channels for *as long as the the channel is enabled* "
+                                                                    ++  "in order to generate accurate reports *(with exceptions as defined by Section 2.4 & 2.5 of the Discord Developer ToS)*. "
+                                                                    ++  "Channels disabled using `ds@disableChannel` will have their data pruned as soon as possible."
+                                                                    ,   ""
+                                                                    ,   "- I'll prune all messages from this guild as soon as possible if I leave the guild "
+                                                                    ++  "*(in accordance with Section 2.4 of the Discord Developer ToS)*."
+                                                                    ,   "" 
+                                                                    ,   "That's all! To get started, type `ds!help` to get a list of commands available. Thanks, and have fun!"
+                                                                    ,   ""
+                                                                    ,   "*~ Sleepy, the 2nd Class Angel*"
+                                                                    ],
+                                                                    embedUrl = "",
+                                                                    embedTime = currentTime,
+                                                                    embedColor = 16567412,
+                                                                    embedFields = []
+                                                                })
+
+                                                            markOnboardingComplete ctx (show $ guildId)
+                                                            return()
                                                     | True -> return ()
                                             else sendMessage "Sorry, you don't have the permissions to do that..."
                                         return ()
@@ -295,6 +338,7 @@ messageManager botid totalrunners chan dis ctx =
                                 embedTime = currentTime,
                                 embedColor = 16567412,
                                 embedFields = [
+                                    Field "**ds!help**" "View this message." True,
                                     Field "**ds!search** *[keywords, ...]*" 
                                        (   "Search for a command in the catalog using keywords.  \n"
                                         ++ "*e.g.* `ds!search graph activity`")
@@ -305,14 +349,15 @@ messageManager botid totalrunners chan dis ctx =
                                         ++ "`ds!run graphChannelActivity #botspam: past 5 days; #memes: 12/28/18-01/01/19`  \n"
                                         ++ "`ds!run sentimentAnalysis @cat protector 40,000#0258 #general: past 1 year`")
                                        True,
-                                    Field "**ds!eval** *\\`\\`\\`R [rCode] \\`\\`\\`*" 
-                                       (   "Evaluate a block of R code. Useful for testing additions to the catalog.  \n"
-                                       ++  "Further documentation planned." ) True,
+                                    -- Field "**ds!eval** *\\`\\`\\`R [rCode] \\`\\`\\`*" 
+                                    --    (   "Evaluate a block of R code. Useful for testing additions to the catalog.  \n"
+                                    --    ++  "Further documentation planned." ) True,
                                     Field "**ds@enableChannel** (admin)" "Enable data aggregation from the channel." True,
-                                    Field "**ds@disableChannel** (admin)" "Disable data aggregation from the channel and mark data for deletion." True
+                                    Field "**ds@disableChannel** (admin)" "Disable data aggregation from the channel and mark data for deletion." True,
+                                    Field "**ds@about** (admin)" "View the about message." True
                                 ]
                             })
-                        return ();
+                        return ()
                    | True -> return ()
 
 
