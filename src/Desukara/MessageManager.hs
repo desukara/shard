@@ -140,7 +140,7 @@ messageManager botid totalrunners chan dis ctx =
 
                             parseDate query =
                                 let matchRange = getCaptures $
-                                        match' "([0-9]{1,2})\\/([0-9]{1,2})\\/([0-9]{2}).*-.*([0-9]{1,2})\\/([0-9]{1,2})\\/([0-9]{2})" query
+                                        match' "([0-9]{1,2})\\/([0-9]{1,2})\\/([0-9]{2}).-.([0-9]{1,2})\\/([0-9]{1,2})\\/([0-9]{2})" query
                                     matchPastN = getCaptures $
                                         match' "past (.+) (.+)" query
                                 in if 
