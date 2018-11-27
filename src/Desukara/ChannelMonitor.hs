@@ -28,13 +28,17 @@ monitor chan dis ctx =
     do
         e <- readChan chan
 
+        print e
+
         case e of
             Left _      -> return ()
             Right event -> case event of
                 ChannelCreate dc -> updateDb dc (DS.channelGuild dc)
                 ChannelUpdate dc -> updateDb dc (DS.channelGuild dc)
                 GuildCreate g gi -> mapM_ (\dc -> updateDb dc (guildId g)) (guildChannels gi)
-                GuildDelete (Unavailable ds_guildid) -> pruneMessagesByGuild ctx $ show ds_guildid -- todo: maybe not the wisest to do since guild outages can trigger this event
+                GuildDelete (Unavailable ds_guildid) -> 
+                    -- todo prune jobs by guild
+                    pruneMessagesByGuild ctx $ show ds_guildid -- todo: maybe not the wisest to do since guild outages can trigger this event
                 _ -> return ()
 
         monitor chan dis ctx

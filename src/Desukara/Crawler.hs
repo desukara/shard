@@ -43,7 +43,10 @@ crawler dis ctx no =
                     putStrLn $ "Starting crawl..."
 
                     case maybeRecent of
-                        Left _ -> return ()
+                        Left e -> do
+                            -- fail!
+                            saveJob ctx $ selectedJob { jobStatus = Failed }
+                            putStrLn $ "Craw failed! " ++ show e
                         Right dc -> 
                             do 
                                 let mostRecentMsg = show $ fromJust $ channelLastMessage dc
